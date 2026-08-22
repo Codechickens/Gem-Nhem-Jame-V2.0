@@ -5,6 +5,8 @@ public class BulletMovement : MonoBehaviour
     [Header("Pushback & Speed")]
     [SerializeField] float moveSpeed = 100f;
     [SerializeField] float knockbackForce = 15f;
+    [Header("Effects")]
+    [SerializeField] GameObject sparkEffect; // Biến chứa Prefab tia lửa
     Rigidbody2D rb;
 
     // --- CÁC BIẾN QUẢN LÝ TỐC ĐỘ VÀ GIẢN LĨNH VỰC ---
@@ -61,6 +63,10 @@ public class BulletMovement : MonoBehaviour
                 Destroy(gameObject);
             }
             else if (other.CompareTag("EnemyBullets")){
+                if (sparkEffect != null)
+                {
+                    Instantiate(sparkEffect, transform.position, Quaternion.identity);
+                }
                 Destroy(gameObject);
                 Destroy(other.gameObject); // Đạn mình chạm đạn địch thì cả 2 cùng nổ
             }

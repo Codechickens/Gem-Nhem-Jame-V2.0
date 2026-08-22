@@ -77,14 +77,22 @@ public class SquareEnemy : MonoBehaviour, IDamageable
     }
 
     void OnTriggerEnter2D (Collider2D other){
-        PlayerMovement player = other.GetComponentInParent<PlayerMovement>();
-        if (other.gameObject.CompareTag("Bullet")){
+        if (other.CompareTag("Bullets") || other.CompareTag("Bullet")){
             TakeDamage(10);
         }
-        if (other.gameObject.CompareTag("Player"))
+       if (other.gameObject.CompareTag("Player"))
+    {
+        // 1. Tìm script PlayerMovement trên đối tượng bị va chạm
+        PlayerMovement playerScript = other.GetComponent<PlayerMovement>();
+        
+        // 2. Nếu tìm thấy script đó, tiến hành trừ máu
+        if (playerScript != null)
         {
-            player.TakeDamage(10, transform);
+            playerScript.TakeDamage(10, transform); 
+            // Lưu ý: Đảm bảo hàm TakeDamage trong file PlayerMovement của bạn 
+            // thực sự có nhận 2 tham số là (int damage, Transform enemyTransform)
         }
+    }
     }
 
     public void TakeDamage(float amount){

@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 public class SimpleDomainAbility : AbilityBase
 {
     [Header("Simple Domain (Giản Lĩnh Vực)")]
-    public float domainRadius = 4f;
+    public float domainRadius = 0.5f;
     public string enemyBulletTag = "EnemyBullets";
     public LayerMask bulletLayer;
 
