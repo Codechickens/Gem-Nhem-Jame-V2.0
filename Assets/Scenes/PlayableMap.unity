@@ -6934,10 +6934,19 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5356115358063983483, guid: 081a714c63b1eb04dbbeccb4a5533032, type: 3}
       insertIndex: -1
       addedObject: {fileID: 796455874}
+    - targetCorrespondingSourceObject: {fileID: 5356115358063983483, guid: 081a714c63b1eb04dbbeccb4a5533032, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 956636094}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7478772075286853802, guid: 081a714c63b1eb04dbbeccb4a5533032, type: 3}
       insertIndex: -1
       addedObject: {fileID: 593240678}
+    - targetCorrespondingSourceObject: {fileID: 7478772075286853802, guid: 081a714c63b1eb04dbbeccb4a5533032, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 593240684}
+    - targetCorrespondingSourceObject: {fileID: 7478772075286853802, guid: 081a714c63b1eb04dbbeccb4a5533032, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 593240683}
   m_SourcePrefab: {fileID: 100100000, guid: 081a714c63b1eb04dbbeccb4a5533032, type: 3}
 --- !u!4 &593240676 stripped
 Transform:
@@ -7002,6 +7011,44 @@ MonoBehaviour:
     DissipationDistance: 100
     PropagationSpeed: 343
   DefaultVelocity: {x: 0, y: -1, z: 0}
+--- !u!114 &593240683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593240677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7575c2872c5260f48856e79ee7bcaa5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MalevolentShrineAbility
+  domainRadius: 6
+  maxActiveDuration: 5
+  cooldownTime: 15
+  tickRate: 0.05
+  damagePerTick: 0.25
+  domainDragForce: 15
+  domainVisual: {fileID: 0}
+  slashEffectPrefab: {fileID: 0}
+  expandDuration: 0.5
+  shakeMagnitude: 0.3
+--- !u!114 &593240684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593240677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9530dd64ff79de46b40510c09b83c01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShadowCloneAbility
+  clonePrefab: {fileID: 0}
+  numberOfClones: 7
+  spawnRadius: 3.5
+  cooldownTime: 20
 --- !u!1 &594607083
 GameObject:
   m_ObjectHideFlags: 0
@@ -10519,8 +10566,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 956636093}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -1.57, z: 0}
   m_LocalScale: {x: 12, y: 12, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -25186,8 +25233,6 @@ PrefabInstance:
       value: 15
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedComponents:
-    - {fileID: 8384405178278392101, guid: 0d6dedac9d2aec14c99f337071020027, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -25223,3 +25268,5 @@ SceneRoots:
   - {fileID: 19414311}
   - {fileID: 1431644804}
   - {fileID: 1373484892}
+  - {fileID: 259016476}
+  - {fileID: 334868841}
