@@ -13,18 +13,25 @@ public class BulletMovement : MonoBehaviour
     private float currentSpeed;
     private bool isIntercepted = false; // Đánh dấu đạn đã bị chém chưa
 
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
+    void Start()
+    {
         currentSpeed = moveSpeed; // Gán tốc độ ban đầu
     }
-
     void Update()
     {
-        // Di chuyển đạn bằng thời gian thực (unscaledDeltaTime) để xuyên qua Time Stop
-        transform.localPosition += transform.up * Time.unscaledDeltaTime * currentSpeed;
+        if (PlayerFocusHitbox.isTimeFrozen)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+        else
+        {
+            rb.linearVelocity = transform.up * moveSpeed;
+        }
     }
-
     // --- HÀM BỊ GỌI KHI LỌT VÀO GIẢN LĨNH VỰC ---
     public void InterceptBySimpleDomain()
     {
@@ -47,9 +54,10 @@ public class BulletMovement : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        
+        if (PlayerFocusHitbox.isTimeFrozen) return;
 
-        // 2. Xử lý va chạm của ĐẠN PLAYER (Đảm bảo khớp cả 2 trường hợp có s hoặc không có s)
-        if (gameObject.CompareTag("Bullets") || gameObject.CompareTag("Bullet"))
+        if (gameObject.CompareTag("Bullet"))
         {
             if (other.CompareTag("Enemies")){
                 Destroy(gameObject);
@@ -78,12 +86,12 @@ public class BulletMovement : MonoBehaviour
             if (player != null){
                 // Nếu trúng vỏ ngoài của Player
                 if (other.CompareTag("Player") && !player.isShimmering && !player.isDashing){
-                    player.TakeDamage(10);
+                    player.TakeDamage(10, transform);
                     Destroy(gameObject);
                 }
                 // Nếu trúng lõi Core
                 else if (other.CompareTag("Core") && player.isShimmering){
-                    player.TakeDamage(20);
+                    player.TakeDamage(20, transform);
                     Destroy(gameObject);
                     Debug.Log("My core is hit! GAHH!!");
                 }

@@ -61,9 +61,36 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Abilities",
+                    "name": "Repair",
                     "type": "Button",
-                    "id": "fc4edc17-b088-4deb-822b-0f317576300c",
+                    "id": "4c0cc8a6-0b8c-4d05-bc02-220816e92bf1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Slot 1 Ability",
+                    "type": "Button",
+                    "id": "3206c578-f47b-4a87-a1f6-419203843dda",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Slot 2 Ability",
+                    "type": "Button",
+                    "id": "78b5cc84-f899-4c84-b30d-095a04c23248",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Slot 3 Ability",
+                    "type": "Button",
+                    "id": "291cdc57-7051-4997-9436-122ccd9d4950",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -183,23 +210,45 @@
                 },
                 {
                     "name": "",
-                    "id": "98cceec6-a481-44af-99cf-5861d21b9fd5",
-                    "path": "<Keyboard>/1",
+                    "id": "3dcb95e4-c1b0-4eca-a94d-13b6a1523485",
+                    "path": "<Keyboard>/r",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Abilities",
+                    "action": "Repair",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "dc8e423d-bf3f-404c-bdcc-800b17964739",
+                    "id": "590e1ae4-b314-4cf6-9608-5c45b3395df6",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Slot 1 Ability",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e944627a-fdf8-4666-83db-b9d1b97d02ff",
                     "path": "<Keyboard>/2",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Abilities",
+                    "action": "Slot 2 Ability",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ac5e52cd-fc76-4892-bdd7-0408afd81786",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Slot 3 Ability",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

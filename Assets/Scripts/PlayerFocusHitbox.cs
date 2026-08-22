@@ -1,12 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerFocusHitbox : MonoBehaviour
+public class PlayerFocusHitbox : AbilityBase
 {
     [Header("Time Freeze Ability (Skill Z)")]
     [Tooltip("Thời gian hiệu lực của kỹ năng (giây)")]
     public float freezeDuration = 3f;
-    [SerializeField] InputActionReference abilityAction;
     
     [Tooltip("Thời gian hồi chiêu (giây)")]
     public float cooldownTime = 10f;
@@ -18,13 +17,11 @@ public class PlayerFocusHitbox : MonoBehaviour
     // Các biến quản lý hệ thống thời gian
     private float currentFreezeTimer = 0f;
     private float currentCooldownTimer = 0f;
-    private bool isTimeFrozen = false;
+    public static bool isTimeFrozen = false;
 
     void Update()
     {
         // --- 1. HỆ THỐNG ĐẾM GIỜ (TIMERS) ---
-        // Lưu ý: Phải dùng Time.unscaledDeltaTime (thời gian thực tế)
-        // Nếu dùng Time.deltaTime, đồng hồ đếm ngược cũng sẽ bị chậm đi!
         if (currentCooldownTimer > 0)
         {
             currentCooldownTimer -= Time.unscaledDeltaTime;
@@ -43,12 +40,17 @@ public class PlayerFocusHitbox : MonoBehaviour
                 Debug.Log("Hết thời gian đóng băng!");
             }
         }
+    }
 
-        // --- 2. XỬ LÝ NHẬP LIỆU PHÍM Z ---
-        // A. Kích hoạt Đóng băng thời gian (Chỉ nhận 1 lần khi VỪA bấm xuống)
-        if (Input.GetKeyDown(KeyCode.Z) && currentCooldownTimer <= 0 && !isTimeFrozen)
+    public override void OnButtonDown()
+    {
+        if (currentCooldownTimer <= 0 && !isTimeFrozen)
         {
             ActivateTimeFreeze();
+        }
+        else
+        {
+            Debug.Log("ZA WARUDO đang hồi chiêu!");
         }
     }
     // Hàm thực thi kỹ năng ngưng đọng thời gian
@@ -72,5 +74,6 @@ public class PlayerFocusHitbox : MonoBehaviour
     {
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
+        isTimeFrozen = false;
     }
 }

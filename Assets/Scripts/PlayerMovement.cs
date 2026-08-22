@@ -3,7 +3,8 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Cinemachine;
-using UnityEngine.Rendering;
+using Unity.VisualScripting;
+using NUnit.Framework;
 
 [RequireComponent(typeof(Rigidbody2D))]
 
@@ -33,6 +34,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] InputActionReference dashAction;
     [SerializeField] InputActionReference interactAction;
     [SerializeField] InputActionReference slowMovementAction;
+    [SerializeField] InputActionReference repairAction;
+
+    [Header("Abilities System")]
+    [SerializeField] AbilityManager abilityManager;
+    [SerializeField] InputActionReference slot1Action;
+    [SerializeField] InputActionReference slot2Action;
+    [SerializeField] InputActionReference slot3Action;
 
     Rigidbody2D rb;
     Vector2 moveInput;
@@ -49,6 +57,13 @@ public class PlayerMovement : MonoBehaviour
     int maxHealth = 100;
     int currentHealth;
     [SerializeField] HealthBar healthBar;
+
+    [Header("Healing")]
+    int maxHeal = 100;
+    int currentHeal;
+    [SerializeField] RepairBar repairBar;
+    float visualHealDuration = 0.5f;
+    Coroutine activeRepairRoutine;
 
     [Header("Interaction")]
     [SerializeField] GameObject interactionButton;
@@ -76,6 +91,16 @@ public class PlayerMovement : MonoBehaviour
     bool isHitStopping = false;
     public float hitRecoilForce = 0.3f;
 
+    [Header("Damage & I-Frames")]
+    float invulnerabilityDuration = 1.5f;
+    float knockbackForce = 15f;
+    float knockbackDuration = 0.2f;
+    Color damageFlashColor = Color.red;
+    bool isInvincible = false;
+    bool isKnockedBack = false;
+
+    [SerializeField] int flashCount = 6;
+
     void Awake(){
         rb = GetComponent<Rigidbody2D>();
         mainCam = Camera.main;
@@ -87,7 +112,9 @@ public class PlayerMovement : MonoBehaviour
     void Start(){
         fireTimer = timeBetweenFiring;
         currentHealth = maxHealth;
+        currentHeal = maxHeal;
         healthBar.SetMaxHealth(maxHealth);
+        if (repairBar != null) repairBar.SetMaxRepair(maxHeal);
         interactionButton.SetActive(false);
         interactionSlider.gameObject.SetActive(false);
         playerCore.SetActive(false);
@@ -96,7 +123,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        if (isDashing) return;
+        if (isDashing || isKnockedBack) return;
 
         moveInput = moveAction.action.ReadValue<Vector2>();
         Vector2 mouseScreenPos = aimAction.action.ReadValue<Vector2>();
@@ -109,6 +136,8 @@ public class PlayerMovement : MonoBehaviour
         HandleDash();
         HandleInteraction();
         HandleSlowMovement();
+        HandleHealing();
+        HandleAbilities();
 
         if (Time.timeScale < 1f) {
             Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 0.2f);
@@ -131,16 +160,19 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-void FixedUpdate(){
+    void FixedUpdate(){
         if (isDashing) {
             DetechDashHits();
             return;
         }
-        if (Time.timeScale < 1f)
+        if (isKnockedBack)
         {
-            rb.linearVelocity = Vector2.zero;
-            
-            transform.position += (Vector3)(moveInput.normalized * speed * Time.unscaledDeltaTime);
+            rb.MoveRotation(targetAngle);
+            return;
+        }
+        if (Time.timeScale > 0f)
+        {
+            rb.linearVelocity = (moveInput.normalized * speed) / Time.timeScale;
         }
         else
         {
@@ -170,6 +202,7 @@ void FixedUpdate(){
         }
     }
     void HandleSlowMovement(){
+        if (isInvincible) return;
         if (!colorInit){
             originalColor = sprite.color;
             colorInit = true;
@@ -180,21 +213,22 @@ void FixedUpdate(){
                 fadeTimer+=Time.deltaTime;
             }
             float t = fadeTimer/fadeDuration;
-            sprite.color = Color.Lerp(originalColor, shimmerColor, t);
+            if (!isInvincible) sprite.color = Color.Lerp(originalColor, shimmerColor, t);
             speed = slowSpeed;
             playerCore.SetActive(true);
-            canDash = false;
+            // canDash = false;
         } else{
             fadeTimer = 0;
-            sprite.color = originalColor;
+            if (!isInvincible) sprite.color = originalColor;
             playerCore.SetActive(false);
             speed = originalSpeed;
-            canDash = true;
+            // canDash = true;
         }
     }
 
     void HandleShooting(){
-        fireTimer -= Time.deltaTime;
+        if (SimpleDomainAbility.isSimpleDomainActive) return;
+        fireTimer -= Time.unscaledDeltaTime;
         if (shootAction.action.IsPressed() && fireTimer <= 0){
             Instantiate(bullet, spawnPoint.position, transform.rotation);
             if (impulseSource != null){
@@ -205,7 +239,7 @@ void FixedUpdate(){
     }
 
     void HandleDash(){
-        if (dashAction.action.triggered && canDash){
+        if (dashAction.action.triggered && canDash && !isShimmering){
             Vector2 mouseScreenPos = aimAction.action.ReadValue<Vector2>();
             Vector3 mouseWorldPos = mainCam.ScreenToWorldPoint(mouseScreenPos);
             Vector2 dashDir = ((Vector2)mouseWorldPos - (Vector2)transform.position).normalized;
@@ -243,10 +277,36 @@ void FixedUpdate(){
                 interactionSlider.gameObject.SetActive(false);
             }
         }
-if (interactAction.action.triggered && interactable){
+        if (interactAction.action.triggered && interactable){
             Debug.Log("Interacted!");
         }
     } 
+
+    void HandleAbilities()
+    {
+        if (abilityManager == null) return;
+        abilityManager.ProcessInput(0, slot1Action.action.IsPressed());
+        abilityManager.ProcessInput(1, slot2Action.action.IsPressed());
+        abilityManager.ProcessInput(2, slot3Action.action.IsPressed());
+    }
+    void HandleHealing()
+    {
+        int hpLoss = maxHealth - currentHealth;
+        if (repairAction.action.triggered && currentHeal > 0)
+        {
+            Debug.Log("Healing!");
+            int healAmount = Mathf.Min(hpLoss, currentHeal);
+            int startHP = currentHealth;
+            int startRepair = currentHeal;
+            currentHealth += healAmount;
+            currentHeal -= healAmount;
+            if (activeRepairRoutine != null)
+            {
+                StopCoroutine(activeRepairRoutine);
+            }
+            activeRepairRoutine = StartCoroutine(VisualRepairRoutine(startHP, currentHealth, startRepair, currentHeal));
+        }
+    }
 
     void OnEnable(){
         moveAction.action.Enable();
@@ -255,6 +315,10 @@ if (interactAction.action.triggered && interactable){
         dashAction.action.Enable();
         interactAction.action.Enable();
         slowMovementAction.action.Enable();
+        repairAction.action.Enable();
+        slot1Action.action.Enable();
+        slot2Action.action.Enable();
+        slot3Action.action.Enable();
 
         moveAction.action.performed += OnMovePerformed;
         moveAction.action.canceled += OnMoveCanceled;
@@ -267,6 +331,10 @@ if (interactAction.action.triggered && interactable){
         dashAction.action.Disable();
         interactAction.action.Disable();
         slowMovementAction.action.Disable();
+        repairAction.action.Disable();
+        slot1Action.action.Disable();
+        slot2Action.action.Disable();
+        slot3Action.action.Disable();
 
         moveAction.action.performed -= OnMovePerformed;
         moveAction.action.canceled -= OnMoveCanceled;
@@ -319,7 +387,29 @@ if (interactAction.action.triggered && interactable){
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
     }
-IEnumerator HitStopRoutine(){
+
+    IEnumerator VisualRepairRoutine(int startHP, int targetHP, int startRepair, int targetHeal)
+    {
+        float elapsed = 0f;
+        while (elapsed < visualHealDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = elapsed / visualHealDuration;
+            if (healthBar != null)
+            {
+                healthBar.SetHealth(Mathf.RoundToInt(Mathf.Lerp(startHP, targetHP, t)));
+            }
+            if (repairBar != null)
+            {
+                repairBar.SetRepair(Mathf.RoundToInt(Mathf.Lerp(startRepair, targetHeal, t)));
+            }
+            yield return null;
+        }
+        if (healthBar != null) healthBar.SetHealth(targetHP);
+        if (repairBar != null) repairBar.SetRepair(targetHeal);
+        activeRepairRoutine = null;
+    }
+    IEnumerator HitStopRoutine(){
         isHitStopping = true;
         Time.timeScale = 0;
         yield return new WaitForSecondsRealtime(hitStopDuration);
@@ -327,10 +417,58 @@ IEnumerator HitStopRoutine(){
         isHitStopping = false;
     }
 
-    public void TakeDamage(int damage){
+    public void TakeDamage(int damage, Transform damageSource = null){
+        if (isInvincible) return;
+        if (activeRepairRoutine != null)
+        {
+            StopCoroutine(activeRepairRoutine);
+            activeRepairRoutine = null;
+            if (repairBar != null) repairBar.SetRepair(currentHeal);
+        }
         Debug.Log("Taking damages! AH!");
         currentHealth -= damage;
         healthBar.SetHealth(currentHealth);
+        if (currentHealth > 0)
+        {
+            StartCoroutine(DamageSequenceRoutine(damageSource));
+        }
+    }
+
+    IEnumerator DamageSequenceRoutine(Transform damageSource)
+    {
+        isInvincible = true;
+        isKnockedBack = true;
+        if (isShimmering) isShimmering = false;
+        if (playerCore != null) playerCore.SetActive(false);
+        Vector2 knockbackDir = Vector2.down;
+        if (damageSource != null)
+        {
+            knockbackDir = ((Vector2)transform.position - (Vector2)damageSource.position).normalized;
+        }
+        rb.linearVelocity = knockbackDir * knockbackForce;
+        float flashInterval = invulnerabilityDuration / (flashCount * 2);
+        float elapsedTime = 0f;
+        for (int i = 0; i < flashCount; i++)
+        {
+            sprite.color = damageFlashColor;
+            yield return new WaitForSeconds(flashInterval);
+            elapsedTime += flashInterval;
+            if (isKnockedBack && elapsedTime >= knockbackDuration)
+            {
+                isKnockedBack = false;
+                rb.linearVelocity = Vector2.zero;
+            }
+            sprite.color = originalColor;
+            yield return new WaitForSeconds(flashInterval);
+            if (isKnockedBack && elapsedTime >= knockbackDuration)
+            {
+                isKnockedBack = false;
+                rb.linearVelocity = Vector2.zero;
+            }
+        }
+        isKnockedBack = false;
+        isInvincible = false;
+        sprite.color = originalColor;
     }
 
     void OnTriggerEnter2D (Collider2D other){
