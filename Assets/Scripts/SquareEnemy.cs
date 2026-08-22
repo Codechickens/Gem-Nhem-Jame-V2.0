@@ -77,8 +77,7 @@ public class SquareEnemy : MonoBehaviour, IDamageable
     }
 
     void OnTriggerEnter2D (Collider2D other){
-        PlayerMovement player = other.GetComponentInParent<PlayerMovement>();
-        if (other.gameObject.CompareTag("Bullets")){
+        if (other.CompareTag("Bullets") || other.CompareTag("Bullet")){
             TakeDamage(10);
         }
     }
